@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import TeacherAuthController from '../../controllers/authController/teacherAuthController';
 import TeacherServices from '../../services/teacherServices';
-import JwtUtility from '../../utils/jwtTokenService ';
+import JwtUtility from '../../utils/jwtTokenService';
 import OtpServices from '../../services/otpService';
 import PasswordUtility from '../../utils/password';
 import TeacherRepository from '../../repositories/teacherRepository';
@@ -10,7 +10,7 @@ import TeacherModel from '../../models/teacherModel';
 import otpModel from '../../models/otpModel';
 import StudentRepository from '../../repositories/studentRepository';
 import studentModel from '../../models/studentModel';
-import JwtTokenService from '../../utils/jwtTokenService ';
+import JwtTokenService from '../../utils/jwtTokenService';
 
 const teacherAuthRoutes = Router();
 const passwordUtility=new PasswordUtility()

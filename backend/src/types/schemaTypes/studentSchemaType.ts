@@ -3,7 +3,7 @@ import mongoose from "mongoose"
 export default interface IStudentSchema extends Document{
       _id :mongoose.Types.ObjectId,
       name:string,
-      username:string,
+      email:string,
       gender ?:string,
       password  :string ,
       Phone ?:number,
@@ -16,7 +16,6 @@ export default interface IStudentSchema extends Document{
       resetPasswordToken?:string | null,
       resetPasswordExpires?:number |null,
       role: string,
-      refreshToken:string
 
       }   
 

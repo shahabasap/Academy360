@@ -15,22 +15,19 @@ class TeacherRepository extends BaseRepository<ITeacherShema> implements ITeache
     }
 
     // Find teacher by username with an optional check for blocked status
-    async findTeacherByUsername(username: string, includeBlocked: boolean = false) {
-        const filter: any = { username };
-        if (!includeBlocked) {
-            filter.is_block = false;
-        }
-        return await super.findOne(filter);
+    async findTeacherByUsername(email: string) {
+    
+        return await super.findOne({email,is_block:false,is_verified:true});
     }
 
     // Remove non-verified teacher by username
-    async removeNonverifiedTeacherByUsername(username: string): Promise<boolean> {
-        const result = await this.model.deleteOne({ username, is_verified: false });
+    async removeNonverifiedTeacherByUsername(email: string): Promise<boolean> {
+        const result = await this.model.deleteOne({ email, is_verified: false });
         return result.deletedCount > 0;
     }
 
     // Create a new teacher entry
-    async createTeacher(data: { name: string; username: string; password: string }) {
+    async createTeacher(data: { name: string; email: string; password: string }) {
         return super.create(data);
     }
     
@@ -45,7 +42,7 @@ class TeacherRepository extends BaseRepository<ITeacherShema> implements ITeache
 
     // Reset teacher's password using reset token
     async resetTeacherPassword(token: string, hashedPassword: string) {
-        return await super.updateOne({
+         const result=await this.model.updateOne({
             resetPasswordToken: token,
             resetPasswordExpires: { $gt: Date.now() },
         }, {
@@ -53,12 +50,13 @@ class TeacherRepository extends BaseRepository<ITeacherShema> implements ITeache
             resetPasswordToken: undefined,
             resetPasswordExpires: undefined,
         });
+        return result.modifiedCount > 0;
     }
 
     // Verify a teacher by email (username)
     async verifyTeacher(email: string) {
         return await super.updateOne(
-            { username: email },
+            {email:email },
             { is_verified: true }
         );
     }
@@ -66,8 +64,13 @@ class TeacherRepository extends BaseRepository<ITeacherShema> implements ITeache
     // Update teacher's refresh token
     async updateRefreshToken(email: string, refreshToken: string) {
         return await super.updateOne(
-            { username: email },
+            { email:email },
             { refreshToken }
+        );
+    }
+    async isBlockedTeacher(id:string) {
+        return await super.findOne(
+         {_id:id}
         );
     }
 }

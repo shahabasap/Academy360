@@ -5,7 +5,7 @@ import IStudentSchema from '../types/schemaTypes/studentSchemaType';
 const studentSchema:Schema=new Schema({
     name:{type:String,require:true},
     password:{type:String,required:false},
-    username:{type:String,require:true},
+    email:{type:String,require:true},
     gender:{type:String,require:false},
     phone:{type:Number,require:false},
     Joined: { type: Date, default: Date.now },
@@ -22,7 +22,6 @@ const studentSchema:Schema=new Schema({
     resetPasswordToken: { type: String, required: false },
     resetPasswordExpires: { type: Date, required: false },
     role:{type:String,default:"student"},
-    refreshToken: { type: String, required: false }
     
 })
 

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ITeacherAuthServices } from '../../interfaces/serviceInterfaces/IauthTeacherServices';
 import { IOtpServices } from '../../interfaces/serviceInterfaces/IotpInterface';
 import IJwtTokenService from '../../interfaces/utilInterfaces/IJwtTokenService';
+import envConfig from '../../config/env';
 
 
 
@@ -19,10 +20,15 @@ class teacherAuthController{
     }
     async teacherLogin(req: Request, res: Response, next: NextFunction) {
         try {
-          const teacher = await this.authTeacherServices.signIn(req.body);
-        
-          res.status(201).json(teacher);
-  
+          const {accessToken,refreshToken} = await this.authTeacherServices.signIn(req.body);
+          
+          res.cookie('teacherToken',refreshToken,{
+            httpOnly:true,
+            secure:envConfig.NODE_ENV=="production",
+            maxAge:90*24*60*60*1000,
+            sameSite:'strict'
+          })
+          res.status(200).json({accessToken});
          
         } catch (error) {
           next(error); // Pass the error to the error-handling middleware
@@ -31,14 +37,15 @@ class teacherAuthController{
     
       async teacherSignUp(req: Request, res: Response, next: NextFunction) {
         try {
-          const{name,username,password}=req.body
+          const{name,email,password}=req.body
           const teacher = await this.authTeacherServices.signUp(req.body);
     
           if(teacher)
             {
-              await this.otpServices.sendOtp(username);
+              await this.otpServices.sendOtp(email);
+              res.status(200).json({success:true,message:"registration completed successfully"});
             }
-          res.status(200).json(teacher);
+        
         } catch (error) {
           next(error); // Pass the error to the error-handling middleware
         }
@@ -56,8 +63,10 @@ class teacherAuthController{
     
       async teacherVerifyOtp(req: Request, res: Response, next: NextFunction) {
         try {
+
           const { email, otp,role } = req.body;
-          const TeacherData = await this.otpServices.verifyOtp(email, otp,role);
+          const otpNumber=Number(req.body.otp)
+          const TeacherData = await this.otpServices.verifyOtp(email, otpNumber,role);
           res.status(200).json(TeacherData);
         } catch (error) {
           next(error); // Pass the error to the error-handling middleware
@@ -66,15 +75,12 @@ class teacherAuthController{
     
       async teacherLogout(req: Request, res: Response, next: NextFunction) {
         try {
-          res.cookie('access-token-teacher', '', {
+          res.cookie('teacherToken', '', {
             httpOnly: true,
             expires: new Date(0)
           });
-          res.cookie('refresh-token-teacher', '', {
-            httpOnly: true,
-            expires: new Date(0)
-          });
-          res.status(200).json({ message: "Teacher logged out" });
+          
+          res.status(200).json({ success:true,message: "teacher logged out" });
         } catch (error) {
           next(error); // Pass the error to the error-handling middleware
         }
@@ -82,8 +88,13 @@ class teacherAuthController{
     
       async teacherForgotPassword(req: Request, res: Response, next: NextFunction) {
         try {
-          const teacher = await this.authTeacherServices.forgotPassword(req.body.username);
-          res.status(200).json("Reset email sent");
+          const{email}=req.body
+          const teacher = await this.authTeacherServices.forgotPassword(email);
+          if(teacher.success)
+          {
+            res.status(200).json({success:true,message:"Please check your mail,reset link on it"});
+          }
+         
         } catch (error) {
           next(error); // Pass the error to the error-handling middleware
         }
@@ -91,8 +102,12 @@ class teacherAuthController{
     
       async teacherResetPassword(req: Request, res: Response, next: NextFunction) {
         try {
-          const teacher = await this.authTeacherServices.resetPassword(req.body.token, req.body.newPassword);
-          res.status(200).json("Password reset successful");
+          const{token,newPassword}=req.body
+          const teacher = await this.authTeacherServices.resetPassword(token,newPassword);
+          if(teacher.success)
+          {
+            res.status(200).json({success:true,message:"Password resetted successful"});
+          }
         } catch (error) {
           next(error); // Pass the error to the error-handling middleware
         }

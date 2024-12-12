@@ -1,14 +1,15 @@
 import IStudentRepository from "../interfaces/repositoryInterfaces/IstudentRepository";
 import { IStudentAuthServices } from "../interfaces/serviceInterfaces/IauthStudentServices";
-import { IOtpServices } from "../interfaces/serviceInterfaces/IotpInterface";
 import IJwtTokenService from "../interfaces/utilInterfaces/IJwtTokenService";
 import { IPasswordUtility } from "../interfaces/utilInterfaces/IPasswordUtility";
 import { CustomErrorClass } from "../types/customError";
+import { sendResetPasswordEmail } from "../utils/email";
 
 class StudentService implements IStudentAuthServices {
   private studentRepository: IStudentRepository;
   private passwordUtility: IPasswordUtility;
   private jwtTokenService:IJwtTokenService
+  private role='student'
 
 
   constructor(
@@ -23,26 +24,26 @@ class StudentService implements IStudentAuthServices {
 
   }
 
-  async signUp(data: { name: string; username: string; password: string }) {
-    const {username,password}=data
-    const existingStudent = await this.studentRepository.findStudentByUsername(username);
+  async signUp(data: { name: string; email: string; password: string }) {
+    const {email,password}=data
+    const existingStudent = await this.studentRepository.findStudentByUsername(email);
     if (existingStudent) {
-      throw new CustomErrorClass("Username already exists", 409);
+      throw new CustomErrorClass("Username already exists", 400);
     }
 
-    await this.studentRepository.deleteNonVerifiedUser(username);
+    await this.studentRepository.deleteNonVerifiedUser(email);
 
     data.password = await this.passwordUtility.getHashedPassword(password);
     const student = await this.studentRepository.createStudent(data);
     return student;
   }
 
-  async signIn(data: { username: string; password: string }) {
-    const{username,password}=data
-    const blockedStudent = await this.studentRepository.findBlockedStudent(username);
+  async signIn(data: { email: string; password: string }) {
+    const{email,password}=data
+    const blockedStudent = await this.studentRepository.findBlockedStudent(email);
     if (blockedStudent) throw new CustomErrorClass("Your account is blocked", 403);
 
-    const student = await this.studentRepository.findVerifiedStudent(username);
+    const student = await this.studentRepository.findVerifiedStudent(email);
     if (!student) {
       throw new CustomErrorClass("Account not verified or does not exist", 403);
     }
@@ -52,20 +53,20 @@ class StudentService implements IStudentAuthServices {
       throw new CustomErrorClass("Email and password do not match", 401);
     }
     const{accessToken,refreshToken}=await this.jwtTokenService.generateToken(student._id,student.role)
-    await this.studentRepository.updateRefreshToken(username,refreshToken)
+  
 
-    return {accessToken};
+    return {accessToken,refreshToken};
   }
 
-  async forgotPassword(username: string) {
-    const student = await this.studentRepository.findStudentByUsername(username);
+  async forgotPassword(email: string) {
+    const student = await this.studentRepository.findStudentByUsername(email);
     if (!student) throw new CustomErrorClass("Student not found", 404);
 
     const resetToken = this.generateResetToken();
-    await this.studentRepository.setResetToken(username, resetToken);
+    await this.studentRepository.setResetToken(email, resetToken);
 
-    // await this.otpService.sendResetEmail(username, resetToken.token, "Student");
-    return "Reset password email sent successfully.";
+    await sendResetPasswordEmail(email,this.role,resetToken.token)
+    return {success:true};
   }
 
   async resetPassword(token: string, newPassword: string) {
@@ -74,7 +75,7 @@ class StudentService implements IStudentAuthServices {
 
     const hashedPassword = await this.passwordUtility.getHashedPassword(newPassword);
     await this.studentRepository.updatePasswordAndClearToken(student._id, hashedPassword);
-    return "Password reset successfully.";
+    return {success:true}
   }
 
 

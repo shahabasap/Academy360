@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export default interface ITeacherShema extends Document {
     _id:mongoose.Types.ObjectId
-    username: string;
+    email: string;
     name: string;
     gender?: 'Male' | 'Female';
     phone?: number;
@@ -25,7 +25,6 @@ export default interface ITeacherShema extends Document {
     role: string;
     Approval: approvelType;
     Is_submit:boolean;
-    refreshToken:string
     
 }
 export type approvelType={

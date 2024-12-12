@@ -14,29 +14,29 @@ class StudentRepository extends BaseRepository<IStudentSchema> implements IStude
   }
 
   // Delete non-verified student by username
-  async deleteNonVerifiedUser(username: string): Promise<boolean> {
-    const result = await this.model.deleteOne({ username, is_verified: false });
+  async deleteNonVerifiedUser(email: string): Promise<boolean> {
+    const result = await this.model.deleteOne({ email, is_verified: false });
     return result.deletedCount > 0; // Returns true if a document was deleted, otherwise false
   }
 
   // Find student by username
-  async findStudentByUsername(username: string): Promise<IStudentSchema | null> {
-    return await super.findOne({ username, is_verified: true });
+  async findStudentByUsername(email: string): Promise<IStudentSchema | null> {
+    return await super.findOne({ email, is_verified: true });
   }
 
   // Create a new student
-  async createStudent(data: { name: string; username: string; password: string }): Promise<IStudentSchema> {
+  async createStudent(data: { name: string; email: string; password: string }): Promise<IStudentSchema> {
     return await super.create(data); // Ensure you handle promise return here
   }
 
   // Find blocked student by username
-  async findBlockedStudent(username: string): Promise<IStudentSchema | null> {
-    return await super.findOne({ username, is_block: true });
+  async findBlockedStudent(email: string): Promise<IStudentSchema | null> {
+    return await super.findOne({ email, is_block: true });
   }
 
   // Find verified student by username
-  async findVerifiedStudent(username: string): Promise<IStudentSchema | null> {
-    return await super.findOne({ username, is_block: false, is_verified: true });
+  async findVerifiedStudent(email: string): Promise<IStudentSchema | null> {
+    return await super.findOne({ email, is_block: false, is_verified: true });
   }
 
   // Update password and clear reset token
@@ -45,17 +45,17 @@ class StudentRepository extends BaseRepository<IStudentSchema> implements IStude
       { _id: studentId },
       {
         password: hashedPassword,
-        resetPasswordToken: undefined,
-        resetPasswordExpires: undefined,
+        resetPasswordToken: null,
+        resetPasswordExpires: null,
       }
     );
     return result.modifiedCount > 0; // Return true if the document was updated
   }
 
   // Set reset token for student
-  async setResetToken(username: string, resetToken: { token: string; expires: Date }): Promise<boolean> {
+  async setResetToken(email: string, resetToken: { token: string; expires: Date }): Promise<boolean> {
     const result = await this.model.updateOne(
-      { username },
+      { email },
       { resetPasswordToken: resetToken.token, resetPasswordExpires: resetToken.expires },
       { upsert: true }
     );
@@ -73,7 +73,7 @@ class StudentRepository extends BaseRepository<IStudentSchema> implements IStude
   // Update refresh token for student
   async updateRefreshToken(email: string, refreshToken: string): Promise<boolean> {
     const result = await this.model.updateOne(
-      { username: email },
+      { email },
       { refreshToken }
     );
     return result.modifiedCount > 0; // Return true if the document was updated
@@ -81,14 +81,21 @@ class StudentRepository extends BaseRepository<IStudentSchema> implements IStude
 
   // Verify student by email (username)
   async verifyUser(email: string): Promise<IStudentSchema | null> {
-    const user = await super.findOne({ username: email });
+    const user = await super.findOne({ email });
     if (!user) return null;
 
     const updateResult = await this.model.updateOne(
-      { username: email },
+      {  email },
       { $set: { is_verified: true } }
     );
     return updateResult.modifiedCount > 0 ? user : null; // Return the user if it was updated
+  }
+  async isBlockedStudent(id: string): Promise<IStudentSchema | null> {
+    const user = await super.findOne({ _id:id });
+    if (!user) return null;
+
+ 
+    return user
   }
 }
 

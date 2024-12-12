@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 import ITeacherShema from "../types/schemaTypes/teacherSchemaType";
 
 const teacherSchema: Schema = new Schema({
-    username: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
     name: { type: String, required: true },
     gender: { type: String, enum: ['Male', 'Female'], required: false },
     phone: { type: Number, required: false },
@@ -45,7 +45,7 @@ const teacherSchema: Schema = new Schema({
         message: { type: String,default: null},
     },
     role: { type: String, default: "teacher" },
-    refreshToken: { type: String, required: false }
+
 });
 
 const TeacherModel = mongoose.model<ITeacherShema>('Teacher', teacherSchema);

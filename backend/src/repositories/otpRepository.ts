@@ -16,7 +16,7 @@ class OtpRepositoy extends BaseRepository<IOtpSchema> implements IOtpRepository{
       }
       
     
-      async findOtp(email: string, otp: string) {
+      async findOtp(email: string, otp: number) {
     
           const otpCheck= await super.findOne({ email, otp });
           return otpCheck

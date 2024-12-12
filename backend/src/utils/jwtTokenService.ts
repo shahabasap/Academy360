@@ -41,7 +41,7 @@ class JwtTokenService implements IJwtTokenService {
             // Generate new tokens
             const { userId, role } = decoded;
             const { accessToken, refreshToken: newRefreshToken } = await this.generateToken(userId, role);
-
+             
             return { accessToken, refreshToken: newRefreshToken, userId, role };
         } catch (error) {
             throw new Error('Invalid or expired refresh token.');
@@ -54,7 +54,10 @@ class JwtTokenService implements IJwtTokenService {
         try {
             return jwt.verify(token, accessTokenSecret);
         } catch (error) {
-            throw new Error('Invalid or expired access token.');
+            if (error instanceof jwt.TokenExpiredError) {
+                throw new Error('Access token has expired.');
+            }
+            throw new Error('Invalid or malformed access token.');
         }
     }
 }

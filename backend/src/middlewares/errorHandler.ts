@@ -11,7 +11,7 @@ export const errorHandler = (
 ) => {
   const status = (err as CustomError).status || 500;
   const message = err.message || 'Internal Server Error';
-
+  console.log("error handler middlwar",err)
   res.status(status).json({
       success: false,
       message,

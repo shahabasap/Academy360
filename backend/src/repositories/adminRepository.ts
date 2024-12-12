@@ -15,8 +15,8 @@ class AdminRepository extends BaseRepository<IAdminSchema> implements IAdminRepo
   }
 
   // Find an admin by username and return the admin or null if not found
-  async findByUsername(username: string): Promise<IAdminSchema | null> {
-    const admin = await super.findOne({ username }); // Call findOne method of BaseRepository
+  async findByUsername(email: string): Promise<IAdminSchema | null> {
+    const admin = await super.findOne({ email }); // Call findOne method of BaseRepository
     return admin; // Return the found admin or null
   }
 

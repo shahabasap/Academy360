@@ -16,6 +16,8 @@ interface EnvConfig {
     REFRESH_TOKEN_SECRET:string;
     ACCESS_TOKEN_EXPIRY:string;
     REFRESH_TOKEN_EXPIRY:string;
+    NODE_ENV :string;
+    Frontend_URL:string;
 }
 
 // Create the config object by pulling values from environment variables
@@ -31,7 +33,9 @@ const envConfig: EnvConfig = {
     ACCESS_TOKEN_SECRET:process.env.ACCESS_TOKEN_SECRET as string,
     REFRESH_TOKEN_SECRET:process.env.REFRESH_TOKEN_SECRET as string,
     ACCESS_TOKEN_EXPIRY:process.env.ACCESS_TOKEN_EXPIRY as string,
-    REFRESH_TOKEN_EXPIRY:process.env.REFRESH_TOKEN_EXPIRY as string
+    REFRESH_TOKEN_EXPIRY:process.env.REFRESH_TOKEN_EXPIRY as string,
+    NODE_ENV :process.env.NODE_ENV  as string,
+    Frontend_URL:process.env.Frontend_URL as string
 
  
 };

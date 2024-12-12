@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import AdminAuthController from '../../controllers/authController/adminAuthController';
 import AdminServices from '../../services/adminServices';
-import JwtTokenService from '../../utils/jwtTokenService ';
+import JwtTokenService from '../../utils/jwtTokenService';
 import PasswordUtility from '../../utils/password';
 import AdminRepository from '../../repositories/adminRepository';
 import adminModel from '../../models/adminModel';

@@ -3,7 +3,42 @@ import CustomError  from '../types/customError';
 import envConfig from '../config/env';
 
 
-
+export const sendResetPasswordEmail = async (
+    email: string,
+    role: string,
+    resetToken: string
+  ): Promise<void> => {
+    try {
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: envConfig.EMAIL_USER,
+          pass: envConfig.EMAIL_PASS,
+        },
+      });
+  
+      const resetLink = `http://localhost:5173/${role}/reset-password/${resetToken}`;
+      const mailOptions = {
+        from: envConfig.EMAIL_USER,
+        to: email,
+        subject: 'Reset Your Password',
+        html: `
+          <p>Hello,</p>
+          <p>We received a request to reset your password. Click the link below to reset your password:</p>
+          <p><a href="${resetLink}">${resetLink}</a></p>
+          <p>If you didn't request this, please ignore this email.</p>
+          <p>Best regards,</p>
+          <p>The Support Team</p>
+        `,
+      };
+  
+      await transporter.sendMail(mailOptions);
+    } catch (error) {
+      const customError = error as CustomError;
+      console.error(`Failed to send reset password email: ${customError.message}`);
+      throw new Error(`Node Error: ${customError.message}`);
+    }
+  };
 
 export const sendEmail = async (email: string, otp: number): Promise<void> => {
     try {
@@ -80,3 +115,4 @@ export const studentInvitationMail = async (data: any): Promise<void> => {
         throw new Error(`Node Error: ${customError.message}`);
     }
 };
+

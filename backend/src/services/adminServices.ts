@@ -20,31 +20,37 @@ class AdminServices implements IAdminAuthServices {
     this.adminRepository = adminRepository;
   }
 
-  async adminSignIn(data: { username: string; password: string }) {
-    const { username, password } = data;
-    const admin = await this.adminRepository.findByUsername(username);
-
-    if (admin) {
-      const passwordMath = await this.passwordUtility.comparePassword(
-        password,
-        admin.password
-      );
-      if (passwordMath) {
-        const { accessToken, refreshToken } =
-          await this.jwtTokenService.generateToken(admin._id, admin.role);
-        await this.adminRepository.updateAdmin(
-          { username: username },
-          { refreshToken: refreshToken }
-        );
-
-        return { success: true, accessToken };
-      }
+  async adminSignIn(data: { email: string; password: string }) {
+    const { email, password } = data;
+  
+    const admin = await this.adminRepository.findByUsername(email);
+    if (!admin) {
+      throw new CustomErrorClass("Account not verified or does not exist", 403);
     }
-
-    return { success: false, accesstoken: null };
+  
+    const isPasswordMatch = await this.passwordUtility.comparePassword(
+      password,
+      admin.password
+    );
+    if (!isPasswordMatch) {
+      throw new CustomErrorClass("Email and password do not match", 401);
+    }
+  
+    const { accessToken, refreshToken } = await this.jwtTokenService.generateToken(
+      admin._id,
+      admin.role
+    );
+  
+    await this.adminRepository.updateAdmin(
+      { username: email },
+      { refreshToken }
+    );
+  
+    return { accessToken, refreshToken };
   }
-  async adminSignup(data: { username: string; password: string }) {
-    const { username, password } = data;
+  
+  async adminSignup(data: { email: string; password: string }) {
+    const { email, password } = data;
     const hashedPassword = await this.passwordUtility.getHashedPassword(
       password
     );

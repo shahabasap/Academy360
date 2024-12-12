@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import StudentAuthController from '../../controllers/authController/studentAuthController';
-import JwtUtility from '../../utils/jwtTokenService ';
 import StudentServices from '../../services/studentServices';
 import OtpServices from '../../services/otpService';
 import PasswordUtility from '../../utils/password';
@@ -10,7 +9,7 @@ import studentModel from '../../models/studentModel';
 import otpModel from '../../models/otpModel';
 import TeacherRepository from '../../repositories/teacherRepository';
 import TeacherModel from '../../models/teacherModel';
-import JwtTokenService from '../../utils/jwtTokenService ';
+import JwtTokenService from '../../utils/jwtTokenService';
 
 const studentAuthRoutes = Router();
 
@@ -32,6 +31,6 @@ studentAuthRoutes.post('/register', studentAuthController.signUp.bind(studentAut
 studentAuthRoutes.post('/verify', studentAuthController.verifyOtp.bind(studentAuthController));
 studentAuthRoutes.post('/forgotpassword', studentAuthController.studentForgotPassword.bind(studentAuthController));
 studentAuthRoutes.post('/reset-password', studentAuthController.studentResetPassword.bind(studentAuthController));
-studentAuthRoutes.get('/logout', studentAuthController.studentLogout.bind(studentAuthController));
+studentAuthRoutes.get('/logout', studentAuthController.logout.bind(studentAuthController));
 
 export default studentAuthRoutes;

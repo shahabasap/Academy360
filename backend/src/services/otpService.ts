@@ -24,7 +24,7 @@ class OtpServices implements IOtpServices {
   async sendOtp(email: string) {
     const record=await this.otpRepository.findByUsername(email)
     if (record && record.expiresAt > new Date()) {
-        throw new CustomErrorClass('OTP has already been sent and is still valid', 409);
+        throw new CustomErrorClass('OTP has already been sent and is still valid', 400);
       }
     const otp = this.generateOtp();
     const expiresAt = new Date(Date.now() + 5 * 60000); // 5 minutes
@@ -34,7 +34,7 @@ class OtpServices implements IOtpServices {
     return otp;
   }
 
-  async verifyOtp( email: string, otp: string, role: "student" | "teacher") {
+  async verifyOtp( email: string, otp: number, role: "student" | "teacher") {
     const record = await this.otpRepository.findOtp(email, otp);
 
     if (!record || record.expiresAt < new Date()) {
@@ -54,7 +54,7 @@ class OtpServices implements IOtpServices {
     // Delete OTP after successful verification
     await this.otpRepository.deleteOtp(email);
 
-    return {message:"user verified successfully"}
+    return {success:true,message:"user verified successfully"}
   }
 
   generateOtp = (): number => {
